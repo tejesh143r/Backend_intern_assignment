@@ -46,3 +46,8 @@ Thumbs.db
 # IDE settings
 .vscode/
 .idea/
+.venv/
+__pycache__/
+*.pyc
+sql_app.db
+.venv.zip
