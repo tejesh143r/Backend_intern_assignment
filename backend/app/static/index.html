@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Task Manager - RBAC & CRUD System</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="dark-theme">
+    <!-- Animated Particles/Orbs in Background -->
+    <div class="bg-glow-container">
+        <div class="glow-orb glow-purple"></div>
+        <div class="glow-orb glow-blue"></div>
+        <div class="glow-orb glow-pink"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="glass-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1>Aegis Task</h1>
+                    <p class="tagline">RBAC REST Security API</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div id="connection-badge" class="badge badge-unhealthy">
+                    <span class="status-dot animate-pulse"></span>
+                    <span class="status-text">Connecting to API...</span>
+                </div>
+                
+                <div id="user-profile-badge" class="profile-badge hidden">
+                    <div class="avatar">
+                        <i class="fa-solid fa-user-shield" id="avatar-icon"></i>
+                    </div>
+                    <div class="user-meta">
+                        <span id="user-display-name" class="user-name">User Name</span>
+                        <span id="user-display-role" class="user-role-badge">Role</span>
+                    </div>
+                    <button id="logout-btn" class="icon-btn" title="Log Out">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- 1. AUTHENTICATION VIEW -->
+            <section id="auth-section" class="auth-card glass-panel animate-fade-in">
+                <div class="auth-tabs">
+                    <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">
+                        <i class="fa-solid fa-lock-open"></i> Sign In
+                    </button>
+                    <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">
+                        <i class="fa-solid fa-user-plus"></i> Register
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+                    <div class="form-header">
+                        <h2>Welcome Back</h2>
+                        <p>Authenticate to access your secure task workspace.</p>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="login-email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-envelope input-icon"></i>
+                            <input type="email" id="login-email" required placeholder="name@company.com" autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-key input-icon"></i>
+                            <input type="password" id="login-password" required placeholder="Enter your password" autocomplete="current-password">
+                            <button type="button" class="password-toggle" onclick="togglePasswordVisibility('login-password')">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <span>Sign In</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </button>
+                    
+                    <div class="demo-accounts">
+                        <p><i class="fa-solid fa-circle-info"></i> <strong>Quick Demo Credentials:</strong></p>
+                        <div class="demo-badges">
+                            <span class="demo-badge" onclick="fillDemoCredentials('admin@aegis.com', 'admin123')">Admin: admin@aegis.com (pwd: admin123)</span>
+                            <span class="demo-badge" onclick="fillDemoCredentials('user@aegis.com', 'user123')">User: user@aegis.com (pwd: user123)</span>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+                    <div class="form-header">
+                        <h2>Create Account</h2>
+                        <p>Join Aegis Task and experience role-based security.</p>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="register-name">Full Name</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-user input-icon"></i>
+                            <input type="text" id="register-name" required placeholder="Jane Doe" autocomplete="name">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="register-email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-envelope input-icon"></i>
+                            <input type="email" id="register-email" required placeholder="name@company.com" autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="register-password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-key input-icon"></i>
+                            <input type="password" id="register-password" required placeholder="Minimum 6 characters" minlength="6" autocomplete="new-password">
+                            <button type="button" class="password-toggle" onclick="togglePasswordVisibility('register-password')">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="register-role">System Role (For Demo Access)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user-tag input-icon"></i>
+                            <select id="register-role">
+                                <option value="user">Standard User (CRUD own tasks)</option>
+                                <option value="admin">Administrator (CRUD all, modify roles)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-accent btn-block">
+                        <span>Register Account</span>
+                        <i class="fa-solid fa-user-plus"></i>
+                    </button>
+                </form>
+            </section>
+
+            <!-- 2. DASHBOARD VIEW (AUTHENTICATED) -->
+            <section id="dashboard-section" class="dashboard-grid hidden">
+                <!-- Side Panel (Filters & Quick Actions) -->
+                <aside class="side-panel glass-panel animate-slide-in-left">
+                    <div class="panel-section">
+                        <h3><i class="fa-solid fa-square-plus text-primary"></i> Create Task</h3>
+                        <button class="btn btn-primary btn-block" onclick="openTaskModal()">
+                            <i class="fa-solid fa-plus"></i> New Task
+                        </button>
+                    </div>
+
+                    <div class="panel-section">
+                        <h3><i class="fa-solid fa-filter text-primary"></i> Filter Workspace</h3>
+                        
+                        <div class="filter-group">
+                            <label for="search-input">Search Title/Desc</label>
+                            <div class="search-wrapper">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="search-input" placeholder="Type to search..." oninput="filterTasks()">
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-status">Status</label>
+                            <select id="filter-status" onchange="filterTasks()">
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-priority">Priority</label>
+                            <select id="filter-priority" onchange="filterTasks()">
+                                <option value="all">All Priorities</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="panel-section stats-summary">
+                        <h3><i class="fa-solid fa-chart-pie text-primary"></i> Task Overview</h3>
+                        <div class="mini-stat">
+                            <span>Pending</span>
+                            <span id="stat-pending" class="count bg-pending">0</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span>In Progress</span>
+                            <span id="stat-progress" class="count bg-progress">0</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span>Completed</span>
+                            <span id="stat-completed" class="count bg-completed">0</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Section (Task Grid & Admin Dashboard) -->
+                <div class="workspace-panel">
+                    <!-- Stat Counters -->
+                    <div class="dashboard-stats animate-fade-in">
+                        <div class="stat-card glass-panel">
+                            <div class="stat-icon bg-gradient-purple">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h4 id="count-total">0</h4>
+                                <p>Total Tasks</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-panel">
+                            <div class="stat-icon bg-gradient-emerald">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h4 id="count-completed">0</h4>
+                                <p>Completed</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-panel">
+                            <div class="stat-icon bg-gradient-pink">
+                                <i class="fa-solid fa-shield-cat"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h4 id="user-role-badge-text">User</h4>
+                                <p>Current Auth Role</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADMIN PANEL (RBAC feature - Admin only) -->
+                    <div id="admin-panel" class="admin-panel-card glass-panel hidden animate-fade-in">
+                        <div class="panel-header">
+                            <div class="title-wrap">
+                                <i class="fa-solid fa-user-gear text-accent"></i>
+                                <h2>Administrative RBAC Console</h2>
+                            </div>
+                            <div class="admin-controls">
+                                <label class="switch-container">
+                                    <input type="checkbox" id="admin-view-all-tasks" onchange="toggleAdminViewAllTasks(this)">
+                                    <span class="slider"></span>
+                                    <span class="label-text">Show tasks of ALL users</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-table-body">
+                                    <!-- Rendered dynamically -->
+                                    <tr>
+                                        <td colspan="6" class="text-center">Loading users database...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Task Grid Section -->
+                    <div class="tasks-section glass-panel">
+                        <div class="section-header">
+                            <h2 id="workspace-title">Your Secure Worksheets</h2>
+                            <div class="section-actions">
+                                <span class="results-count"><span id="filtered-count">0</span> tasks shown</span>
+                            </div>
+                        </div>
+
+                        <div id="tasks-grid" class="tasks-grid">
+                            <!-- Tasks cards will be injected dynamically -->
+                            <div class="no-tasks-state">
+                                <div class="empty-icon">
+                                    <i class="fa-regular fa-folder-open"></i>
+                                </div>
+                                <h3>No tasks found in this vault</h3>
+                                <p>Create a task to get started, or check your query filters.</p>
+                                <button class="btn btn-secondary btn-sm" onclick="openTaskModal()">
+                                    <i class="fa-solid fa-circle-plus"></i> Add First Task
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- API REQUEST & RESPONSE INSPECTOR -->
+        <footer class="glass-footer">
+            <button id="api-inspector-toggle" class="api-toggle" onclick="toggleApiInspector()">
+                <i class="fa-solid fa-code text-cyan animate-pulse"></i>
+                <span>API Developer Inspector (Real-time Live Stream)</span>
+                <i id="inspector-chevron" class="fa-solid fa-chevron-up"></i>
+            </button>
+            <div id="api-inspector-body" class="api-inspector-body collapsed">
+                <div class="inspector-grid">
+                    <div class="console-card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-arrow-right text-purple"></i> API HTTP Request</span>
+                            <span id="request-method" class="method-tag tag-get">GET</span>
+                        </div>
+                        <pre><code id="request-json" class="language-json">{ "status": "Idle..." }</code></pre>
+                    </div>
+                    <div class="console-card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-arrow-left text-emerald"></i> API JSON Response</span>
+                            <span id="response-status" class="status-code-tag">200 OK</span>
+                        </div>
+                        <pre><code id="response-json" class="language-json">{ "status": "Ready for authentication requests." }</code></pre>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- TASK DIALOG MODAL (CRUD Add/Edit) -->
+    <div id="task-modal" class="modal-overlay hidden">
+        <div class="modal-card glass-panel">
+            <div class="modal-header">
+                <h2 id="modal-title">Create Secure Task Entry</h2>
+                <button class="close-btn" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <form id="task-form" onsubmit="handleTaskSubmit(event)">
+                <input type="hidden" id="task-edit-id">
+                
+                <div class="input-group">
+                    <label for="task-title">Task Title</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-heading input-icon"></i>
+                        <input type="text" id="task-title" required placeholder="Project roadmap drafting" maxlength="100">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="task-desc">Description</label>
+                    <textarea id="task-desc" rows="3" placeholder="Provide task context, requirements or secure data details..."></textarea>
+                </div>
+
+                <div class="modal-form-row">
+                    <div class="input-group">
+                        <label for="task-status">Working Status</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-spinner input-icon"></i>
+                            <select id="task-status">
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="task-priority">Severity / Priority</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-triangle-exclamation input-icon"></i>
+                            <select id="task-priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="task-due-date">Due Date</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-calendar-days input-icon"></i>
+                        <input type="date" id="task-due-date">
+                    </div>
+                </div>
+
+                <div class="modal-footer-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="modal-submit-btn">Save Vault Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Main JS Application Logic -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
