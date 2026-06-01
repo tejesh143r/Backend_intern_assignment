@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union, Any
-from jose import jwt, JWTError # Wait, let's use pyjwt since we listed pyjwt in requirements!
 import jwt
 from passlib.context import CryptContext
 from .config import settings
